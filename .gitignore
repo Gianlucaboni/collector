@@ -1,0 +1,19 @@
+# Prerequisites
+*.png
+*.csv
+/data
+credentials/
+/img
+*.txt
+*json
+*.jpg
+*checkpoint.py
+*.pyc
+*.swp
+*.zip
+/old_data
+/old
+/.ipynb_checkpoints
+!spec-file.txt
+__pycache__/
+*.pickle
