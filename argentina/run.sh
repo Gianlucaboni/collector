@@ -1,6 +1,6 @@
 #! /bin/bash
 
 tmux kill-session -t argentina
-tmux new-session -d -s argentina
-tmux send -t argentina "source activate cp" ENTER
-tmux send -t argentina "python3 collector_ar.py" ENTER
+tmux new -d -s argentina
+tmux send-keys -t argentina "source activate cp" C-m
+tmux send-keys -t argentina "python3 collector_ar.py" C-m
