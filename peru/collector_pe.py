@@ -2,7 +2,7 @@ import sys
 sys.path.append('../')
 from modules.utilities import print_bbox, make_grid, flatten_data, prune_json,rotatingIP
 from modules.utilities import convert_to_USD,columns_rename,useless_columns #data cleaning
-from modules.drive_utils import driveConnection,country2id
+from modules.drive_utils import driveConnection,country2id,telegramBot
 import pandas as pd 
 import requests
 import time
@@ -14,9 +14,7 @@ import numpy as np
 
 ip_generator = rotatingIP()
 dc = driveConnection()
-
-
-
+telegram = telegramBot()
 class scraper:
 
     def __init__(self,lon_min,lat_min,lon_max,lat_max,city):
@@ -148,11 +146,14 @@ class scraper:
         df_clean  = pd.DataFrame.from_records(self.json_list)
         print(df_clean)
         df_clean['scrapingTime'] = pd.to_datetime(self.time).strftime("%Y-%m-%d")
-        csv_path = f"./data/{self.city}_{self.time}.csv"
+        folder_path = f"./data/{self.time}/"
+        os.makedirs(folder_path,exist_ok=True)
+        csv_path = os.path.join(folder_path,self.city+'.csv')
         df_clean.to_csv(csv_path,index=False)
+        telegram.send_log(f"{self.city} done: {df_clean.shape[0]} ads found!")
         folder_id = country2id['Peru']
         print('Uploading csv ...')
-        dc.push_csv(folder_id=folder_id,csv_path=csv_path,spreadsheet_name=f'{self.time}_{self.city}')
+        #dc.push_csv(folder_id=folder_id,csv_path=csv_path,spreadsheet_name=f'{self.time}_{self.city}')
         print("Done!")
         if not local:
             os.system(f"rm {csv_path}")
@@ -191,6 +192,7 @@ class cleaner:
             currency_conv_dict[currency] = convert_to_USD(currency)        
         df_clean['priceUSD']=df_clean.apply(lambda row: currency_conv_dict[row.currency]*row.price,axis=1) #add a new field with the price in USD
         df_clean = df_clean.drop_duplicates()
+        df_clean['$m2'] = df_clean['priceUSD']/df_clean['m2'] 
         return df_clean
 
 df = pd.read_csv('./cities.csv')
@@ -215,5 +217,5 @@ for city,lat_min,lat_max,lon_min,lon_max in zip(cities,lat_min_l,lat_max_l,lon_m
     dict_time[city] = ending_time-starting_time
     pd.DataFrame.from_dict(dict_time,orient='index',columns=['time']).to_csv('timing_peru.csv')
     time.sleep(60)
-
-
+with open("../logs/peru.txt", "w") as file:
+    file.write("Peru Done!")
