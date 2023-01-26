@@ -90,7 +90,7 @@ class scraper:
         for idx,cell in enumerate(grid_list):
             lon_min,lat_min,lon_max,lat_max = cell
             if(self.n_request % 20 == 0):
-                pause_sec = random.random()*10
+                pause_sec = random.random()*2
                 print(f"Pause for {round(pause_sec,2)} secs...")
                 time.sleep(pause_sec) # random secods of pause
                 self.proxies = {'http':ip_generator.get_proxy()}#change ip every 20 queries
@@ -125,7 +125,7 @@ class scraper:
                     for data in results:
                         selected_data = prune_json(flatten_data(data))
                         self.json_list.append(selected_data)
-                    time.sleep(random.random()*5)
+                    time.sleep(random.random()*2)
             except:
                 pass
         return 
