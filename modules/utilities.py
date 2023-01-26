@@ -7,9 +7,12 @@ import random
 import contextily as cx
 import matplotlib.pyplot as plt
 import requests
+import re
+import os
 
 columns_rename = {'descriptions_0_label':'m2',
 'descriptions_1_label':'room',
+'rooms':'room',
 'seller_info_id':'sellerId',
 'seller_info_tags_0':'sellerType',
 'price_amount':'price',
@@ -22,7 +25,13 @@ columns_rename = {'descriptions_0_label':'m2',
 'category_id':'categoryId',
 'available_quantity':'quantity',
 'seller_info_address_city_name':'city',
- 'seller_info_address_country_name':'country'
+'seller_info_address_country_name':'country',
+'precio':'price',
+'_source_listing_price':'price',
+'dormitorios':'room',
+'lng':'lon',
+'_source_listing_locations_location_point':'coords',
+'_source_listing_area':'m2'
 }
 
 useless_columns=['price_discount_rate',
@@ -101,6 +110,7 @@ def print_bbox(city,lon_min,lat_min,lon_max,lat_max):
                                     )
     f, ax = plt.subplots(1, figsize=(14, 14))
     ax.imshow(ghent_img, extent=ghent_ext)
+    os.makedirs('./maps',exist_ok=True)
     f.savefig(f'./maps/{city}.png')
     return
 
@@ -184,9 +194,9 @@ class rotatingIP:
                 else:
                     pass
             proxy = random.choice(proxies)
-            if(self.check_proxy(proxy=proxy)):
-                print(f"{proxy} works well!")
-                return proxy
+            print(f"Using {proxy}")
+            return proxy
+
                 
     def check_proxy(self,proxy):
         proxies = {'http':proxy}
@@ -206,3 +216,12 @@ def convert_to_USD(ticker_from):
     soruce_converter = requests.get(f'https://currency.world/convert/{ticker_from}/USD').text
     soup =BeautifulSoup(soruce_converter,'html.parser')
     return float(soup.find('input',{'id':'amountv1'})['value'])
+
+def get_lat_long(string):
+    match = re.search(r"POINT \((-?\d+\.\d+) (-?\d+\.\d+)\)", string)
+    if match:
+        lat = float(match.group(1))
+        lon = float(match.group(2))
+        return lat, lon
+    else:
+        return np.nan,np.nan
