@@ -5,6 +5,8 @@ from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 import pandas as pd
 import re
+import json
+import requests
 
 SCOPES = ['https://www.googleapis.com/auth/drive.file',
           'https://www.googleapis.com/auth/drive.metadata.readonly',
@@ -190,3 +192,19 @@ class driveConnection:
         request = service.spreadsheets().batchUpdate(spreadsheetId=spreadsheetId, body=body)
         response = request.execute()
         return response
+
+
+class telegramBot:
+
+    def __init__(self,path_credentials_telegram = '../credentials/credentials_telegram.json'):
+
+        with open(path_credentials_telegram , 'r') as f:
+            config = json.load(f)
+        self.chat_id = config['CHAT_ID']
+        self.token = config['TOKEN']
+
+    def send_log(self,message):
+
+        url = f"https://api.telegram.org/bot{self.token}/sendMessage?chat_id={self.chat_id}&text={message}"
+        requests.get(url)
+        return 
