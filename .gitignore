@@ -15,5 +15,6 @@ credentials/
 /old
 /.ipynb_checkpoints
 !spec-file.txt
+!cities.csv
 __pycache__/
 *.pickle
