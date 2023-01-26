@@ -18,3 +18,4 @@ credentials/
 !cities.csv
 __pycache__/
 *.pickle
+/logs
