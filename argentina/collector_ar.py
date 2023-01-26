@@ -2,7 +2,7 @@ import sys
 sys.path.append('../')
 from modules.utilities import print_bbox, make_grid, flatten_data, prune_json,rotatingIP
 from modules.utilities import convert_to_USD,columns_rename,useless_columns #data cleaning
-from modules.drive_utils import driveConnection,country2id
+from modules.drive_utils import driveConnection,country2id,telegramBot
 import pandas as pd 
 import numpy as np
 import requests
@@ -13,7 +13,7 @@ import random
 
 ip_generator = rotatingIP()
 dc = driveConnection()
-
+telegram = telegramBot()
 class scraper:
 
     def __init__(self,lon_min,lat_min,lon_max,lat_max,city):
@@ -137,11 +137,14 @@ class scraper:
         df_clean = cl.clean()
         print(df_clean)
         df_clean['scrapingTime'] = pd.to_datetime(self.time).strftime("%Y-%m-%d")
-        csv_path = f"./data/{self.city}_{self.time}.csv"
+        folder_path = f"./data/{self.time}/"
+        os.makedirs(folder_path,exist_ok=True)
+        csv_path = os.path.join(folder_path,self.city+'.csv')
         df_clean.to_csv(csv_path,index=False)
+        telegram.send_log(f"{self.city} done: {df_clean.shape[0]} ads found!")
         folder_id = country2id['Argentina']
         print('Uploading csv ...')
-        dc.push_csv(folder_id=folder_id,csv_path=csv_path,spreadsheet_name=f'{self.time}_{self.city}')
+        #dc.push_csv(folder_id=folder_id,csv_path=csv_path,spreadsheet_name=f'{self.time}_{self.city}')
         print("Done!")
         if not local:
             os.system(f"rm {csv_path}")
@@ -182,6 +185,7 @@ class cleaner:
         df_clean = df_clean.query('quantity==1') # avoid multiple ads : they are only 1.5% of the total
         df_clean = df_clean.drop(columns='quantity')
         df_clean = df_clean.drop_duplicates()
+        df_clean['$m2'] = df_clean['priceUSD']/df_clean['m2'] 
         return df_clean
 
 
@@ -206,3 +210,5 @@ for city,lat_min,lat_max,lon_min,lon_max in zip(cities,lat_min_l,lat_max_l,lon_m
     dict_time[city] = ending_time-starting_time
     pd.DataFrame.from_dict(dict_time,orient='index',columns=['time']).to_csv('timing_argentina.csv')
     time.sleep(60*3)
+with open("../logs/argentina.txt", "w") as file:
+    file.write("argentina Done!")

@@ -1,8 +1,8 @@
 import sys
 sys.path.append('../')
-from modules.utilities import print_bbox, make_grid, flatten_data, prune_json,rotatingIP
+from modules.utilities import print_bbox, make_grid, flatten_data, prune_json,rotatingIP,get_lat_long
 from modules.utilities import convert_to_USD,columns_rename,useless_columns #data cleaning
-from modules.drive_utils import driveConnection,country2id
+from modules.drive_utils import driveConnection,country2id,telegramBot
 import pandas as pd 
 import numpy as np
 import requests
@@ -13,7 +13,7 @@ import random
 
 ip_generator = rotatingIP()
 dc = driveConnection()
-
+telegram = telegramBot()
 
 class scraper:
 
@@ -128,11 +128,11 @@ class scraper:
                     'with_algorithm': False,
                 },
             }
-            if(self.n_request % 100 == 0):
-                if(self.n_request!=0):
-                    self.save_data(local=True)
-                self.json_list = []
-                pause_sec = random.random()*4
+            if(self.n_request % 30 == 0):
+                #if(self.n_request!=0):
+                #    self.save_data(local=True)
+                #self.json_list = []
+                pause_sec = random.random()*1
                 print(f"Pause for {round(pause_sec,2)} secs...")
                 time.sleep(pause_sec) # random secods of pause
                 self.proxies = {'http':ip_generator.get_proxy()}#change ip every 20 queries
@@ -177,11 +177,14 @@ class scraper:
         df_clean = cl.clean()
         print(df_clean)
         df_clean['scrapingTime'] = pd.to_datetime(self.time).strftime("%Y-%m-%d")
-        csv_path = f"./data/{self.city}_{self.time}_{self.n_request}.csv"
+        folder_path = f"./data/{self.time}/"
+        os.makedirs(folder_path,exist_ok=True)
+        csv_path = os.path.join(folder_path,self.city+'.csv')
         df_clean.to_csv(csv_path,index=False)
+        telegram.send_log(f"{self.city} done: {df_clean.shape[0]} ads found!")
         folder_id = country2id['Colombia']
         print('Uploading csv ...')
-        dc.push_csv(folder_id=folder_id,csv_path=csv_path,spreadsheet_name=f'{self.time}_{self.city}_{self.n_request}')
+        #dc.push_csv(folder_id=folder_id,csv_path=csv_path,spreadsheet_name=f'{self.time}_{self.city}_{self.n_request}')
         print("Done!")
         if not local:
             os.system(f"rm {csv_path}")
@@ -213,15 +216,29 @@ class cleaner:
                 pass
         self.df['currency'] = 'COP'
         self.df = self.df[[c for c in self.df.columns if 'photos' not in c]]
-        df_clean = self.df.rename(columns=columns_rename).drop_duplicates(subset=['id']) #drop useless columns + rename columns + drop duplicated id
-        currency_conv_dict = {} #build a dict with con rate for each currency in the df
-        df_clean['price']=df_clean['price'].apply(lambda x: float(x))
-        for currency in df_clean.currency.unique():
-            currency_conv_dict[currency] = convert_to_USD(currency)        
-        df_clean['priceUSD']=df_clean.apply(lambda row: currency_conv_dict[row.currency]*row.price,axis=1) #add a new field with the price in USD
-        print(df_clean.shape[0])
-        df_clean = df_clean.drop_duplicates()
-        print(df_clean.shape[0])
+        telegram.send_log(f"Pre cleaning size: {self.df.shape}")
+        try:
+            df_clean = self.df.rename(columns=columns_rename).drop_duplicates(subset=['_source_listing_property_id']) #drop useless columns + rename columns + drop duplicated id
+        except:
+            pass
+        try:
+            currency_conv_dict = {} #build a dict with con rate for eacdh currency in the df
+            df_clean['price']=df_clean['price'].apply(lambda x: float(x))
+            for currency in df_clean.currency.unique():
+                currency_conv_dict[currency] = convert_to_USD(currency)        
+            df_clean['priceUSD']=df_clean.apply(lambda row: currency_conv_dict[row.currency]*row.price,axis=1) #add a new field with the price in USD
+            print(df_clean.shape[0])
+            df_clean = df_clean.drop_duplicates()
+            df_clean['lat'],df_clean['lon'] = zip(*df_clean.coords.apply(lambda x: get_lat_long(x)))#create lat,lon from coords
+            df_clean.drop(columns='coords',inplace=True) #drop coords
+            print(df_clean.shape[0])
+            df_clean.m2 = df_clean.m2.apply(lambda x: float(x))
+            df_clean['$m2'] = df_clean['priceUSD']/df_clean['m2'] 
+
+            print("WELL DONE")
+        except Exception as e:
+            print(e)
+
         return df_clean
 
 df = pd.read_csv('./cities.csv')
@@ -236,12 +253,15 @@ for city,lat_min,lat_max,lon_min,lon_max in zip(cities,lat_min_l,lat_max_l,lon_m
     starting_time = datetime.now()
     try:
         print_bbox(city=city,lat_max=lat_max,lat_min=lat_min,lon_max=lon_max,lon_min=lon_min)
-    except:
-        print("map not done!")
+    except Exception as e:
+        print(str(e)+"  map not done!")
     s = scraper(lon_min=lon_min,lat_min=lat_min,lon_max=lon_max,lat_max=lat_max,city=city)
+    telegram.send_log(f"Starting: {city}")    
     s.run_scraper(lon_min=lon_min,lat_min=lat_min,lon_max=lon_max,lat_max=lat_max,stepsize=8000)
-    #s.save_data()
+    s.save_data(local=True)
     ending_time = datetime.now()
     dict_time[city] = ending_time-starting_time
     pd.DataFrame.from_dict(dict_time,orient='index',columns=['time']).to_csv('timing_colombia.csv')
     time.sleep(60*3)
+with open("../logs/colombia.txt", "w") as file:
+    file.write("Colombia Done!")
