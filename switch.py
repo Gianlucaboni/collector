@@ -2,7 +2,7 @@ import os
 import time
 
 folder_log = "./logs"
-number_countries  = 7
+number_countries  = 6
 os.system(f"rm  {folder_log}/*")#remove all the files in folder log
 
 while True:
