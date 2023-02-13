@@ -12,7 +12,7 @@ from datetime import datetime
 import random
 
 ip_generator = rotatingIP()
-dc = driveConnection()
+#dc = driveConnection()
 telegram = telegramBot()
 class scraper:
 
@@ -197,12 +197,14 @@ lon_min_l = df.lon_min.to_list()
 lon_max_l = df.lon_max.to_list()
 dict_time = {}
 for city,lat_min,lat_max,lon_min,lon_max in zip(cities,lat_min_l,lat_max_l,lon_min_l,lon_max_l):
+    
     print(city)
+    telegram.send_log(f"Starting {city.title()} - Argentina")
     starting_time = datetime.now()
-    try:
-        print_bbox(city=city,lat_max=lat_max,lat_min=lat_min,lon_max=lon_max,lon_min=lon_min)
-    except:
-        print("map not done!")
+    # try:
+    #     print_bbox(city=city,lat_max=lat_max,lat_min=lat_min,lon_max=lon_max,lon_min=lon_min)
+    # except:
+    #     print("map not done!")
     s = scraper(lon_min=lon_min,lat_min=lat_min,lon_max=lon_max,lat_max=lat_max,city=city)
     s.run_scraper(lon_min=lon_min,lat_min=lat_min,lon_max=lon_max,lat_max=lat_max,stepsize=8000)
     s.save_data(local=True)

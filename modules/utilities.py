@@ -31,7 +31,8 @@ columns_rename = {'descriptions_0_label':'m2',
 'dormitorios':'room',
 'lng':'lon',
 '_source_listing_locations_location_point':'coords',
-'_source_listing_area':'m2'
+'_source_listing_area':'m2',
+'_id':'id'
 }
 
 useless_columns=['price_discount_rate',

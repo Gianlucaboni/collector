@@ -11,7 +11,7 @@ import time
 import os
 from datetime import datetime
 
-dc = driveConnection()
+#dc = driveConnection()
 telegram = telegramBot()
 class scraper:
 
@@ -323,10 +323,12 @@ for city,lat_min,lat_max,lon_min,lon_max in zip(cities,lat_min_l,lat_max_l,lon_m
 
     print(city)
     starting_time = datetime.now()
-    try:
-        print_bbox(city=city,lat_max=lat_max,lat_min=lat_min,lon_max=lon_max,lon_min=lon_min)
-    except:
-        print("MAP not done...")    
+    telegram.send_log(f"Starting {city} - Bolivia")
+
+    # try:
+    #     print_bbox(city=city,lat_max=lat_max,lat_min=lat_min,lon_max=lon_max,lon_min=lon_min)
+    # except:
+    #     print("MAP not done...")    
     s = scraper(lon_min=lon_min,lat_min=lat_min,lon_max=lon_max,lat_max=lat_max,city=city)
     s.run_scraper(lon_min=lon_min,lat_min=lat_min,lon_max=lon_max,lat_max=lat_max,stepsize=8000)
     s.save_data(local=True)

@@ -13,7 +13,7 @@ import random
 import numpy as np
 
 ip_generator = rotatingIP()
-dc = driveConnection()
+#dc = driveConnection()
 telegram = telegramBot()
 class scraper:
 

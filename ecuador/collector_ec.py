@@ -12,7 +12,7 @@ import random
 from datetime import datetime
 
 ip_generator = rotatingIP()
-dc = driveConnection()
+#dc = driveConnection()
 telegram=telegramBot()
 class scraper:
 
