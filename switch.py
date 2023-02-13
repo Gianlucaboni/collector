@@ -2,7 +2,7 @@ import os
 import time
 
 folder_log = "./logs"
-number_countries  = 6
+number_countries  = 7
 os.system(f"rm  {folder_log}/*")#remove all the files in folder log
 
 while True:
@@ -10,5 +10,6 @@ while True:
     print(f"{num_files} out of {number_countries} collectors are done...")
     if num_files == number_countries:
         print("Collection completed! Switching off ...")
+        os.system("python make_historicals.py")
         os.system("sudo poweroff")
     time.sleep(600) # pause for 10 mins before checking again
