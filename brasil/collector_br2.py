@@ -210,7 +210,7 @@ class cleaner:
         return df_clean
 
 
-df = pd.read_csv('./cities.csv')
+df = pd.read_csv('./cities2.csv')
 cities = df.name.to_list()
 lat_min_l = df.lat_min.to_list()
 lat_max_l = df.lat_max.to_list()
