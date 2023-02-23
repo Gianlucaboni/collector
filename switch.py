@@ -10,6 +10,7 @@ while True:
     print(f"{num_files} out of {number_countries} collectors are done...")
     if num_files == number_countries:
         print("Collection completed! Switching off ...")
+        os.system("python data_wrapper.py")
         os.system("python make_historicals.py")
         os.system("sudo poweroff")
     time.sleep(600) # pause for 10 mins before checking again
