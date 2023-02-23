@@ -234,7 +234,7 @@ for city,lat_min,lat_max,lon_min,lon_max in zip(cities,lat_min_l,lat_max_l,lon_m
     ending_time = datetime.now()
     dict_time[city] = ending_time-starting_time
     pd.DataFrame.from_dict(dict_time,orient='index',columns=['time']).to_csv('timing_brasil.csv')
-with open("../logs/brazil.txt", "w") as file:
+with open("../logs/brazil2.txt", "w") as file:
     file.write("Brazil Done!")
 
 
