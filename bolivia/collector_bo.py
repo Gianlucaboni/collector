@@ -273,7 +273,7 @@ class cleaner:
     def m2_parser(self,x):
 
         try:
-            return float(x.split(" ")[0].replace(",","").replace("."," "))
+            return float(x)
         except:
             return np.nan
 

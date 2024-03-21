@@ -11,10 +11,10 @@ class DataProcessor:
         self.load_config()
         self.failed_fn = []
         self.sql = MySQL(db='ads_db',credentials_files='./credentials/sql_findap.json',GCR=False)
-        max_date  = self.sql.from_sql_to_pandas(f"SELECT max(scrapingTime) as max_date FROM ads_db.{country}")['max_date'].iloc[0]
-        new_folders = [f for f in os.listdir(f"./{self.country}/data") if (f > max_date.replace("-","") and f.startswith("2"))]
-        self.csv_list = [file for f in new_folders for file in glob.glob(f"./{self.country}/data/{f}/*.csv")]
-        # self.csv_list = glob.glob(f"./{self.country}/data/2*/*.csv")
+        # max_date  = self.sql.from_sql_to_pandas(f"SELECT max(scrapingTime) as max_date FROM ads_db.{country}")['max_date'].iloc[0]
+        # new_folders = [f for f in os.listdir(f"./{self.country}/data") if (f > max_date.replace("-","") and f.startswith("2"))]
+        # self.csv_list = [file for f in new_folders for file in glob.glob(f"./{self.country}/data/{f}/*.csv")]
+        self.csv_list = glob.glob(f"./{self.country}/data/2*/*.csv")
 
         print(self.csv_list)
         self.df_total = None
@@ -42,7 +42,7 @@ class DataProcessor:
         except:
             return None
 
-    def process_data(self):
+    def process_data(self) -> None:
         cleaned_dfs = []
         for fn in tqdm(self.csv_list):
             try:
@@ -67,13 +67,13 @@ class DataProcessor:
                         t[c] = t[c].apply(lambda x: self.to_float(x))
                     else:
                         t[c] = t[c].apply(lambda x: str(x))
-                cleaned_dfs.append(t)
+                cleaned_dfs.append(t.reset_index(drop=True))
             except:
                 self.failed_fn.append(fn)
 
             
             # Assuming sql and table_name are defined somewhere
-        df = pd.concat(cleaned_dfs)
+        df = pd.concat(cleaned_dfs).reset_index(drop=True)
         self.df_total=df
         return 
     def push_to_table(self):
