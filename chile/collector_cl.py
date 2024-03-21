@@ -190,19 +190,22 @@ dict_time = {}
 print(df)
 for city,lat_min,lat_max,lon_min,lon_max in zip(cities,lat_min_l,lat_max_l,lon_min_l,lon_max_l):
     
-    print(city)
-    telegram.send_log(f"Starting {city.title()} - Chile")
-    starting_time = datetime.now()
-    # try:
-    #     print_bbox(city=city,lat_max=lat_max,lat_min=lat_min,lon_max=lon_max,lon_min=lon_min)
-    # except:
-    #     print("MAP not done...")
-    s = scraper(lon_min=lon_min,lat_min=lat_min,lon_max=lon_max,lat_max=lat_max,city=city)
-    s.run_scraper(lon_min=lon_min,lat_min=lat_min,lon_max=lon_max,lat_max=lat_max,stepsize=8000)
-    s.save_data(local=True)
-    ending_time = datetime.now()
-    dict_time[city] = ending_time-starting_time
-    pd.DataFrame.from_dict(dict_time,orient='index',columns=['time']).to_csv('timing_chile.csv')
+    try:
+        print(city)
+        telegram.send_log(f"Starting {city.title()} - Chile")
+        starting_time = datetime.now()
+        # try:
+        #     print_bbox(city=city,lat_max=lat_max,lat_min=lat_min,lon_max=lon_max,lon_min=lon_min)
+        # except:
+        #     print("MAP not done...")
+        s = scraper(lon_min=lon_min,lat_min=lat_min,lon_max=lon_max,lat_max=lat_max,city=city)
+        s.run_scraper(lon_min=lon_min,lat_min=lat_min,lon_max=lon_max,lat_max=lat_max,stepsize=8000)
+        s.save_data(local=True)
+        ending_time = datetime.now()
+        dict_time[city] = ending_time-starting_time
+        pd.DataFrame.from_dict(dict_time,orient='index',columns=['time']).to_csv('timing_chile.csv')
+    except:
+        pass
 with open("../logs/chile.txt", "w") as file:
     file.write("Chile Done!")
 

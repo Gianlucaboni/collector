@@ -27,15 +27,17 @@ lon_min_l = df.lon_min.to_list()
 lon_max_l = df.lon_max.to_list()
 dict_time = {}
 for city,lat_min,lat_max,lon_min,lon_max in zip(cities,lat_min_l,lat_max_l,lon_min_l,lon_max_l):
-    
-    starting_time = datetime.now()
-    s = scraper(city=city)
-    s.run_scraper(lon_min=lon_min,lat_min=lat_min,lon_max=lon_max,lat_max=lat_max,stepsize=8000)
-    s.save_data(local=True)
-    s.group_data()
-    ending_time = datetime.now()
-    dict_time[city] = ending_time-starting_time
-    pd.DataFrame.from_dict(dict_time,orient='index',columns=['time']).to_csv('timing_brasil.csv')
+    try:    
+        starting_time = datetime.now()
+        s = scraper(city=city)
+        s.run_scraper(lon_min=lon_min,lat_min=lat_min,lon_max=lon_max,lat_max=lat_max,stepsize=8000)
+        s.save_data(local=True)
+        s.group_data()
+        ending_time = datetime.now()
+        dict_time[city] = ending_time-starting_time
+        pd.DataFrame.from_dict(dict_time,orient='index',columns=['time']).to_csv('timing_brasil.csv')
+    except:
+        pass
 with open(f"../logs/{output_file}", "w") as file:
     file.write("Brazil Done!")
 
