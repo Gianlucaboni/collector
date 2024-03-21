@@ -24,3 +24,4 @@ dependencies:
     - osmnx
     - contextily
     - google-api-python-client
+    - psycopg2
